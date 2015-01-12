@@ -1,0 +1,73 @@
+buildscript {
+    ext {
+        springBootVersion = '1.2.1.RELEASE'
+    }
+    repositories {
+        //mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath 'org.springframework:springloaded:1.2.0.RELEASE'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'spring-boot'
+
+group = 'com.xvitcoder.angularspringapp'
+version = '0.0.1'
+
+jar {
+    baseName = 'spring-angular'
+    version = '0.0.1'
+}
+
+description = """AngularSpringApp Maven Webapp"""
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+
+repositories {
+	jcenter()
+}
+
+dependencies {
+	compile("org.springframework.boot:spring-boot-starter-web")    
+	compile("org.springframework.boot:spring-boot-starter-velocity")
+    compile("org.springframework.boot:spring-boot-starter-actuator")
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+
+    //compile group: 'org.springframework', name: 'spring-webmvc', version:'3.1.2.RELEASE'
+    //compile group: 'org.apache.velocity', name: 'velocity', version:'1.7'
+    //compile group: 'org.codehaus.jackson', name: 'jackson-mapper-asl', version:'1.9.12'
+}
+
+idea {
+    module {
+        inheritOutputDirs = false
+        outputDir = file("$buildDir/classes/main/")
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.2.1'
+}
+
+task copyToLib << {
+    copy {
+        from configurations.runtime.copy().setTransitive(false)
+        into "$buildDir/libs"
+        rename { name ->
+            def artifacts = configurations.runtime.resolvedConfiguration.resolvedArtifacts
+            def artifact = artifacts.find { it.file.name == name }
+            "${artifact.name}.${artifact.extension}"
+        }
+    }
+}
+
+build.mustRunAfter clean
+task stage(dependsOn: ['clean', 'build', 'copyToLib'])
